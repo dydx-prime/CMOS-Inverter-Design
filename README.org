@@ -1,0 +1,17 @@
+* Abstract/Overview
+
+* Objectives, Specs, Design Goals
+
+* Schematic Design (Xschem)
+
+* Simulation (Ngspice)
+
+* Layout (Magic)
+
+* DRC, LVS, Verification
+
+* Results/Discussions
+
+* Conclusion
+
+** Include the files in the repo, and pictures; no need to put in readme
