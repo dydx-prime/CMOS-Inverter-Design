@@ -8,9 +8,14 @@ The objective of the project is to analyze the PMOS and NMOS for DC sweep, VTC (
 * Simulation (Ngspice)
 The NMOS and PMOS are first analyzed to understand how the current of the transistors behaves based on different inputs of Vds and Vgs. Utilizing ngspice, the following schematic is simulated for mutiple steps of voltages of Vds and Vgs. Within Ngspice, the command line is used to display and plot the necessary data calculated. The first DC sweep on Vgs (transfer characterisitcs) for multiple values of Vds is show in the plot below, where it can be seen that the threshold voltage is between 500mv and 650mv.
 
-vgs_sweep.svg
+#+CAPTION: Figure 1.1
+[[vgs_sweep.svg]]
 
 To better match the ideal .7v threshold, the NMOS channel length is changed from .15 to .3[um], reducing short channel effects. Thus, the new plot as seen below, better resembles the textbook ideal NMOS. INSERT
+
+#+CAPTION: Figure 1.2
+[[vds_sweep.svg]]
+
 * Layout (Magic)
 
 * DRC, LVS, Verification
