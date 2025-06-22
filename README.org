@@ -6,6 +6,7 @@ The objective of the project is to analyze the PMOS and NMOS for DC sweep, VTC (
 * Schematic Design (Xschem)
 
 * Simulation (Ngspice)
+
 The NMOS and PMOS are first analyzed to understand how the current of the transistors behaves based on different inputs of Vds and Vgs. Utilizing ngspice, the following schematic is simulated for mutiple steps of voltages of Vds and Vgs. Within Ngspice, the command line is used to display and plot the necessary data calculated. The first DC sweep on Vgs (transfer characterisitcs) for multiple values of Vds is show in the plot below, where it can be seen that the threshold voltage is between 500mv and 650mv.
 
 #+CAPTION: Figure 1.1
@@ -15,6 +16,41 @@ To better match the ideal .7v threshold, the NMOS channel length is changed from
 
 #+CAPTION: Figure 1.2
 [[vds_sweep.svg]]
+
+----TODO: PMOS I-V curve----
+
+** Voltage Transfer Characteristics
+
+In essence, the voltage transfer characteristics of the inverter are tested to see how the output voltage V_out is affected for different inputs of V_in.
+
+Before proceeding with VTC analysis, a quick symbol for the inverter (NOT) is created within xschem, and is utilized for the remainder of the project.
+
+#+CAPTION: Figure 1.3 - Inverter in the form of CMOS
+[[CMOS_NOT.png]]
+
+#+CAPTION: Figure 1.4 - Inverter in the form of a gate
+[[GATE_NOT.png]]
+
+With a much improved format for testing the inverter, the VTC simulation is tested for a wide range of inputs between 0 and 2[V]. The plot of Figure 1.5 shows that the output is able to go from a high value, to a low value, the charctersisitcs that shape an inverter. 
+
+#+CAPTION: Figure 1.5
+[[vgs_sweep.svg]]
+
+This proves the design to be correct, though it can be seen that the value where V_in and V_out are equal, is not .9[V]. the following command is used in Ngspice,
+
+#+BEGIN_SRC spice
+meas dc vm when vin=vout
+#+END_SRC
+
+where it can be seen that the V_m (midpoint voltage), is .83[V]. The midpoint voltage can be important in regards to noise margin, as it can dictate the maximum value a voltage can have to be considered a low, and a mininum value a voltage can have to be considered a high. Between these maximum and minimum points, is where the noise becomes prominent, that is, the inverter will not be able to set a clean or correct high/low value. This can be mitigated by widening the PMOS transistor, though increasing the width can lead to increased area in silicon area, as well as increased power consumption. For this project, the width of the PMOS is 2[um], and the NMOS is 1[um]. Table 1.1 Is used merely to show the values of V_m for different width's of the PMOS network.
+
+#+CAPTION: Table 1.1 - Values of V_m for different PMOS width values
+| WIDTH | V_m |
+|-------+-----|
+| 1[um] | .830[V] |
+| 2[um] | .869[V] |
+| 3[um] | .893[V] |
+
 
 * Layout (Magic)
 
