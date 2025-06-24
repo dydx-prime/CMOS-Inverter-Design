@@ -3,7 +3,6 @@
 * Objectives, Specs, Design Goals
 The objective of the project is to analyze the PMOS and NMOS for DC sweep, VTC (voltage transfer charcteristics), and . After that, the CMOS configuration of the inverted will be formed and analyzed for
 
-* Schematic Design (Xschem)
 
 * Simulation (Ngspice)
 
@@ -34,9 +33,9 @@ Before proceeding with VTC analysis, a quick symbol for the inverter (NOT) is cr
 With a much improved format for testing the inverter, the VTC simulation is tested for a wide range of inputs between 0 and 2[V]. The plot of Figure 1.5 shows that the output is able to go from a high value, to a low value, the charctersisitcs that shape an inverter. 
 
 #+CAPTION: Figure 1.5
-[[vgs_sweep.svg]]
+[[vtc_1.svg]]
 
-This proves the design to be correct, though it can be seen that the value where V_in and V_out are equal, is not .9[V]. the following command is used in Ngspice,
+This proves the design to be correct, though it can be seen that the value where V_in and V_out are equal, is not .9[V]. The following command is used in Ngspice,
 
 #+BEGIN_SRC spice
 meas dc vm when vin=vout
@@ -51,6 +50,47 @@ where it can be seen that the V_m (midpoint voltage), is .83[V]. The midpoint vo
 | 2[um] | .869[V] |
 | 3[um] | .893[V] |
 
+With the use of the 2[um] PMOS, the VTC of the inverter is as followed.
+
+#+CAPTION: Figure 1.6
+[[vtc.svg]]
+
+** Noise Analysis
+
+Signals tend to variate as they oscillate, so the noise margin is studied to measure what the range of input voltages are to be considered for a functional inverter. Thus, two variables are introduced, where V_IL is the maximum value a voltage can be for the signal to be considered a low (or 0), and V_IH is the minimum value a voltage can be for the signal to be considered a high (or 1).
+
+Using the following Ngspice command
+
+#+BEGIN_SRC spice_1
+let gain = abs(deriv(vout)) >= 1
+#+END_SRC
+
+leads to the plot of figure 1.7, where it can be seen that signals between .7[V] and .9[V] lead to inoperable values for the inverter being built. With a small tweak to the previous command, both the VTC and Noise Margin plots can be compared.
+
+#+CAPTION: Figure 1.7
+[[gain.svg]]
+
+This small tweak leads to Figure 1.8, where the intercepts of V_out and the gain (Noise Margin), are measured to define the values of V_IH and V_IL.
+
+#+CAPTION: Figure 1.8
+[[gain_vout.svg]]
+
+Utilizing the following Ngspice commands, 
+
+#+BEGIN_SRC spice_2
+meas vil dc find vin when gain=1 cross=1
+meas vih dc find vin when gain=1 cross=last
+#+END_SRC
+
+leads to the formation of Table 1.2 to provide the following calculations for V_IL and V_IH
+
+#+CAPTION: Table 1.2 - Calculations for V_IL and V_IH
+| V_IH | V_OH |
+|-------+-----|
+| .744[V] | .980[V] |
+
+
+** Delay Analysis
 
 * Layout (Magic)
 
@@ -60,4 +100,3 @@ where it can be seen that the V_m (midpoint voltage), is .83[V]. The midpoint vo
 
 * Conclusion
 
-** Include the files in the repo, and pictures; no need to put in readme
