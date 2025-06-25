@@ -82,21 +82,70 @@ meas vil dc find vin when gain=1 cross=1
 meas vih dc find vin when gain=1 cross=last
 #+END_SRC
 
-leads to the formation of Table 1.2 to provide the following calculations for V_IL and V_IH
+leads to the formation of Table 1.2 to provide the following calculations for V_IL and V_IH1
 
 #+CAPTION: Table 1.2 - Calculations for V_IL and V_IH
-| V_IH | V_OH |
+| V_IL | V_OH |
 |-------+-----|
 | .744[V] | .980[V] |
 
-
 ** Delay Analysis
 
-* Layout (Magic)
+Propagation delay is a fundamental topic within VLSI design that is used to determine speed, prevent glitches, and analyze timing behavior of a block based on context (input based on previous block). Two variables, t_PHL(propagation delay from high to low) and t_PLH(propagation delay from low to high) are calculated within a transient simulation from .02[ns] to 10[ns]. Figure 1.9 illustrates the behavior of the inverter, which shows that the transition points for V_in and V_out can vary.
 
-* DRC, LVS, Verification
+#+CAPTION: Figure 1.9
+[[trans_vout_vin.svg]]
 
-* Results/Discussions
+
+With the following Ngspice commands,
+
+#+BEGIN_SRC spice_3
+meas tran vin50 when vin=.9 RISE=2
+meas tran vout50 when vout=.9 FALL=2
+let tpHL = vout50-vin50
+
+meas tran vin50 when vin=.9 FALL=1
+meas tran vout50 when vout=.9 RISE=1
+
+print tpHL
+print tpLH
+#+END_SRC
+
+the results for t_PHL and t_PLH are 24.88[ps] and 35.65[ps], respectively. These values are used to determine the time it takes V_in to affect V_out (for low and high inputs). Analysis for the time it takes for V_out to change during a transition can be reffered to as rise(t_r) and fall time(t_f). To calculate the rise and fall time, the following Ngspice commands are used,
+
+#+BEGIN_SRC spice_4
+meas tran t10 when vout=.18 RISE=1
+meas tran t90 when vout=1.6 RISE=1
+let tr=t90-t10
+
+meas tran t10 when vout=.18 FALL=1
+meas tran t90 when vout=1.6 FALL=1
+let tf=t10-t90
+
+print tr
+print tf
+#+END_SRC
+
+where tr and tf are 53.82[ps] and 45.28[ps], respectivelly. Up until this point, the inverter has been isolated(independent of context), which is never seen in typical design. It's relevance is in the fact that some ways to reduce the rise and fall times of a design, is to:
+
+- Increase the power (V_dd)
+
+- Increase the size of the inverter (transistors)
+
+- Decrease the load capacitance
+
+With the inverter being isolated, the third method for reducing rise and fall times cannot be done. Thus, a capacitor can be added to the output of the inverter as shown in figure 1.10, to simulate load capacitance. Before testing the methods provided, it is important to know that there are tradeoffs to reducing delay(or creating fast speed designs), such as the increase of power consumption, the increase of silicon area, and possible lower noise margins.
+
+#+CAPTION: Figure 1.10
+[[inv_cap.png]]
+
+
+
+** Power Analysis
+
+* Layout Design (Magic)
+
+** DRC, LVS, Verification
 
 * Conclusion
 
