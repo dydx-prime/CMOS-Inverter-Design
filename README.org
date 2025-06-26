@@ -139,13 +139,35 @@ With the inverter being isolated, the third method for reducing rise and fall ti
 #+CAPTION: Figure 1.10
 [[inv_cap.png]]
 
+Table 1.3 is formed to showcase the different values of rise and fall times based on changes in V_dd, V_in, PMOS/NMOS widths, and load capacitance. The purpose of this section is to prove that increasing the power supply of the inverter, decreasing the capacitance load, and increasing the size of the transistors, will lead to faster speeds.
 
+#+CAPTION: Table 1.2 - Calculations for V_IL and V_IH
+| V_IL | V_OH |
+|------+-----|
+| tbd | tbd |
 
 ** Power Analysis
 
+// Should be simple, just adjust the capacitance load or reduce transistor size and note how power is affected.
+
 * Layout Design (Magic)
+
+explain what you are to do (with the PDK)
 
 ** DRC, LVS, Verification
 
+Magic provides DRC
+
+you'll have to use netgen for LVS checks
+
+that should be all you need tbh
+
 * Conclusion
 
+final inverter specs
+
+what you learned
+
+the importance of the project in regards to your career
+
+YOU'RE ALMOST DONE, FINISH IT NOW
