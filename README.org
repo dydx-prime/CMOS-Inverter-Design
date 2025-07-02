@@ -3,7 +3,6 @@
 * Objectives, Specs, Design Goals
 The objective of the project is to analyze the PMOS and NMOS for DC sweep, VTC (voltage transfer charcteristics), and . After that, the CMOS configuration of the inverted will be formed and analyzed for
 
-
 * Simulation (Ngspice)
 
 The NMOS and PMOS are first analyzed to understand how the current of the transistors behaves based on different inputs of Vds and Vgs. Utilizing ngspice, the following schematic is simulated for mutiple steps of voltages of Vds and Vgs. Within Ngspice, the command line is used to display and plot the necessary data calculated. The first DC sweep on Vgs (transfer characterisitcs) for multiple values of Vds is show in the plot below, where it can be seen that the threshold voltage is between 500mv and 650mv.
@@ -82,7 +81,7 @@ meas vil dc find vin when gain=1 cross=1
 meas vih dc find vin when gain=1 cross=last
 #+END_SRC
 
-leads to the formation of Table 1.2 to provide the following calculations for V_IL and V_IH1
+leads to the formation of Table 1.2 to provide the following calculations for V_IL and V_IH
 
 #+CAPTION: Table 1.2 - Calculations for V_IL and V_IH
 | V_IL | V_OH |
@@ -106,6 +105,7 @@ let tpHL = vout50-vin50
 
 meas tran vin50 when vin=.9 FALL=1
 meas tran vout50 when vout=.9 RISE=1
+let tpLH = vout50-vin50
 
 print tpHL
 print tpLH
@@ -139,24 +139,72 @@ With the inverter being isolated, the third method for reducing rise and fall ti
 #+CAPTION: Figure 1.10
 [[inv_cap.png]]
 
-Table 1.3 is formed to showcase the different values of rise and fall times based on changes in V_dd, V_in, PMOS/NMOS widths, and load capacitance. The purpose of this section is to prove that increasing the power supply of the inverter, decreasing the capacitance load, and increasing the size of the transistors, will lead to faster speeds.
+Table 1.3 is formed to showcase the different values of rise and fall times based on changes in V_dd, V_in, PMOS/NMOS widths, and load capacitance. The purpose of this section is to prove that the increase to the power supply of the inverter, the decrease to the capacitance load, and the increase of the size of the transistors, will lead to faster speeds.
 
-#+CAPTION: Table 1.2 - Calculations for V_IL and V_IH
-| V_IL | V_OH |
-|------+-----|
-| tbd | tbd |
+#+CAPTION: Table 1.3 - Summary of Tests
+| V_DD/V_IN | C_LOAD | PMOS | NMOS | t_r | t_f |
+|------+----|----+---|---+--|---+--|--+--|--+--|
+| 1.8[V] | 0[pF] | 2[um] | 1[um] | 53.82[ps] | 45.28[ps] |
+| 1.8[V] | 0[pF] | 4[um] | 2[um] | 53.19[ps] | 40.23[ps] |
+| 1.4[V] | 0[pF] | 2[um] | 1[um] | 67.86[ps] | 47.23[ps] |
+| 1.4[V] | 0.25[pF] | 2[um] | 1[um] | 220.00[ps] | 126.99[ps] |
+| 1.0[V] | 0.50[pF] | 2[um] | 1[um] | 762.42[ps] | 375.19[ps] |
 
 ** Power Analysis
 
-// Should be simple, just adjust the capacitance load or reduce transistor size and note how power is affected.
+Recall the formula for average power,
 
-* Layout Design (Magic)
+[[https://quicklatex.com/cache3/f3/ql_ea65fd5b6fb7ab4e8abfedf5f80c65f3_l3.png]]
 
-explain what you are to do (with the PDK)
+where the product of voltage and current are integrated from zero to the period of the signal. Then, the average power is found by dividing the previous result by the period of the signal. Because this formula is a function of time, this will be a pure transient simulation. 
 
-** DRC, LVS, Verification
+Referring to figure 1.11, it can be seen that for a period of 3.3[ns], the current flowing in the inverter is varying across the axis. Plotting the current and V_out together (figure 1.12), it can be seen that the interval from 3.3[ns] to 6.6[ns] is the best interval to use for power calculations.
 
-Magic provides DRC
+#+CAPTION: Figure 1.11
+[[current_plot.svg]]
+
+#+CAPTION: Figure 1.12
+[[current_vout_plot.svg]]
+
+It is important to mention that there is little to no current being drawn in the inverter because of the capacitance load of zero. Current rises when the capacitance is charging, and since there is little influence of the capacitance, there is little current being used. This is a key concept to understand for low power design, but there are tradeoffs to having low power consumption, such as a reduction in performance.
+
+Some ways to reduce power:
+
+- Reduce the capacitance load
+- Reduce Transistor Size
+- In layout design: Reduce wire size since there will be an increase in resistance, which means less current, thus reducing capacitance
+
+By utilizing the following ngspice commands:
+
+#+BEGIN_SRC spice_5
+meas tran curr_inte integ vdd#branch from=3.3e-09 to=6.6e-09
+let power=curr_inte*1.8
+let avg_power = power/3.3e-09
+print avg_power
+#+END_SRC
+
+the average power, P_avg, is equal to -3.45[uW]. The negative sign suggests that the dirrection or sign convention is opposite, which can be disregarded in this case. The key point is that there is little power being drawn in the inverter, which is due to its low load capacitance.
+
+** A Quick Recap
+
+The inverter has been tested for its I-V, VTC, Noise, Delay, and Power characteristics, where the final design specficiations for a V_DD and V_IN of 1.8[V].
+
+- PMOS: Width of 2 microns and length of .15 microns
+- NMOS: Width of 1 micron and length of .15 microns
+- Rise Time (t_r): 53.82[ps]
+- Fall Time (t_f): 45.28[ps]
+- Propagation Delay from High to Low (t_pHL): 24.88[ps]
+- Propagation Delay from Low to High (t_pLH): 35.65[ps]
+- Input Low Voltage (V_IL): .744[V]
+- Input High Voltage (V_IH): .980[V]
+- Power (Assuming zero load capacitance): -3.45[uW]
+
+* Layout Design & DRC Checks (Magic)
+
+
+
+* LVS & Final Verification
+
 
 you'll have to use netgen for LVS checks
 
