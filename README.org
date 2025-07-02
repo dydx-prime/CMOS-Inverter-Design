@@ -13,7 +13,7 @@ The NMOS and PMOS are first analyzed to understand how the current of the transi
 To better match the ideal .7v threshold, the NMOS channel length is changed from .15 to .3[um], reducing short channel effects. Thus, the new plot as seen below, better resembles the textbook ideal NMOS. INSERT
 
 #+CAPTION: Figure 1.2
-[[vds_sweep.svg]]
+[[images/vds_sweep.svg]]
 
 ----TODO: PMOS I-V curve----
 
@@ -24,15 +24,15 @@ In essence, the voltage transfer characteristics of the inverter are tested to s
 Before proceeding with VTC analysis, a quick symbol for the inverter (NOT) is created within xschem, and is utilized for the remainder of the project.
 
 #+CAPTION: Figure 1.3 - Inverter in the form of CMOS
-[[CMOS_NOT.png]]
+[[images/CMOS_NOT.png]]
 
 #+CAPTION: Figure 1.4 - Inverter in the form of a gate
-[[GATE_NOT.png]]
+[[images/GATE_NOT.png]]
 
 With a much improved format for testing the inverter, the VTC simulation is tested for a wide range of inputs between 0 and 2[V]. The plot of Figure 1.5 shows that the output is able to go from a high value, to a low value, the charctersisitcs that shape an inverter. 
 
 #+CAPTION: Figure 1.5
-[[vtc_1.svg]]
+[[images/vtc_1.svg]]
 
 This proves the design to be correct, though it can be seen that the value where V_in and V_out are equal, is not .9[V]. The following command is used in Ngspice,
 
@@ -52,7 +52,7 @@ where it can be seen that the V_m (midpoint voltage), is .83[V]. The midpoint vo
 With the use of the 2[um] PMOS, the VTC of the inverter is as followed.
 
 #+CAPTION: Figure 1.6
-[[vtc.svg]]
+[[images/vtc.svg]]
 
 ** Noise Analysis
 
@@ -67,12 +67,12 @@ let gain = abs(deriv(vout)) >= 1
 leads to the plot of figure 1.7, where it can be seen that signals between .7[V] and .9[V] lead to inoperable values for the inverter being built. With a small tweak to the previous command, both the VTC and Noise Margin plots can be compared.
 
 #+CAPTION: Figure 1.7
-[[gain.svg]]
+[[images/gain.svg]]
 
 This small tweak leads to Figure 1.8, where the intercepts of V_out and the gain (Noise Margin), are measured to define the values of V_IH and V_IL.
 
 #+CAPTION: Figure 1.8
-[[gain_vout.svg]]
+[[images/gain_vout.svg]]
 
 Utilizing the following Ngspice commands, 
 
@@ -93,7 +93,7 @@ leads to the formation of Table 1.2 to provide the following calculations for V_
 Propagation delay is a fundamental topic within VLSI design that is used to determine speed, prevent glitches, and analyze timing behavior of a block based on context (input based on previous block). Two variables, t_PHL(propagation delay from high to low) and t_PLH(propagation delay from low to high) are calculated within a transient simulation from .02[ns] to 10[ns]. Figure 1.9 illustrates the behavior of the inverter, which shows that the transition points for V_in and V_out can vary.
 
 #+CAPTION: Figure 1.9
-[[trans_vout_vin.svg]]
+[[images/trans_vout_vin.svg]]
 
 
 With the following Ngspice commands,
@@ -137,7 +137,7 @@ where tr and tf are 53.82[ps] and 45.28[ps], respectivelly. Up until this point,
 With the inverter being isolated, the third method for reducing rise and fall times cannot be done. Thus, a capacitor can be added to the output of the inverter as shown in figure 1.10, to simulate load capacitance. Before testing the methods provided, it is important to know that there are tradeoffs to reducing delay(or creating fast speed designs), such as the increase of power consumption, the increase of silicon area, and possible lower noise margins.
 
 #+CAPTION: Figure 1.10
-[[inv_cap.png]]
+[[images/inv_cap.png]]
 
 Table 1.3 is formed to showcase the different values of rise and fall times based on changes in V_dd, V_in, PMOS/NMOS widths, and load capacitance. The purpose of this section is to prove that the increase to the power supply of the inverter, the decrease to the capacitance load, and the increase of the size of the transistors, will lead to faster speeds.
 
@@ -161,10 +161,10 @@ where the product of voltage and current are integrated from zero to the period 
 Referring to figure 1.11, it can be seen that for a period of 3.3[ns], the current flowing in the inverter is varying across the axis. Plotting the current and V_out together (figure 1.12), it can be seen that the interval from 3.3[ns] to 6.6[ns] is the best interval to use for power calculations.
 
 #+CAPTION: Figure 1.11
-[[current_plot.svg]]
+[[images/current_plot.svg]]
 
 #+CAPTION: Figure 1.12
-[[current_vout_plot.svg]]
+[[images/current_vout_plot.svg]]
 
 It is important to mention that there is little to no current being drawn in the inverter because of the capacitance load of zero. Current rises when the capacitance is charging, and since there is little influence of the capacitance, there is little current being used. This is a key concept to understand for low power design, but there are tradeoffs to having low power consumption, such as a reduction in performance.
 
