@@ -1,0 +1,4 @@
+* SPICE3 file created from final.ext - technology: sky130A
+
+X0 Vout Vin gnd VSUBS sky130_fd_pr__nfet_01v8 ad=0.5 pd=3 as=0.5 ps=3 w=1 l=0.15
+X1 Vout Vin Vdd w_n220_60# sky130_fd_pr__pfet_01v8 ad=1 pd=5 as=1 ps=5 w=2 l=0.15

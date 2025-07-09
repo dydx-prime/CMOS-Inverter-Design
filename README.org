@@ -1,27 +1,36 @@
-* Abstract/Overview
+* Table of Contents
+- [[#objective][Objective]]
+- [[#simulations][Simulation]]
+- [[#layout-design][Layout Design & DRC Checks (Magic)]]
+- [[#lvs-final-verification][LVS & Final Verification]]
+- [[#conclusion][Conclusion]]
 
-* Objectives, Specs, Design Goals
-The objective of the project is to analyze the PMOS and NMOS for DC sweep, VTC (voltage transfer charcteristics), and . After that, the CMOS configuration of the inverted will be formed and analyzed for
+* Objective
+The objective of the project is to analyze (Ngspice) the PMOS/NMOS isolated. A custom inverter is then formed, where the VTC (voltage transfer charcteristics), Noise, Delay, and Power are analyzed. What follows is a layout design (Magic) that complies with the SKY130 PDK rules. The project concludes with LVS checks through Netgen and congruency checks with the simulations that contain the transistors from the schematic capture, and the layout design.
 
 * Simulation (Ngspice)
 
-The NMOS and PMOS are first analyzed to understand how the current of the transistors behaves based on different inputs of Vds and Vgs. Utilizing ngspice, the following schematic is simulated for mutiple steps of voltages of Vds and Vgs. Within Ngspice, the command line is used to display and plot the necessary data calculated. The first DC sweep on Vgs (transfer characterisitcs) for multiple values of Vds is show in the plot below, where it can be seen that the threshold voltage is between 500mv and 650mv.
+** Transistor Simulation
+
+The NMOS and PMOS are first analyzed to understand how the current of the transistors behaves based on different inputs of V_ds and V_gs. Utilizing ngspice, the following schematic is simulated for mutiple steps of voltages of V_ds and V_gs. Within Ngspice, the command line is used to display and plot the necessary data calculated. The first DC sweep on V_gs (transfer characterisitcs) for multiple values of V_ds is show in the plot below, where it can be seen that the threshold voltage is between 500mv and 650mv.
 
 #+CAPTION: Figure 1.1
 [[images/vgs_sweep.svg]]
 
-To better match the ideal .7v threshold, the NMOS channel length is changed from .15 to .3[um], reducing short channel effects. Thus, the new plot as seen below, better resembles the textbook ideal NMOS. INSERT
+Figure 1.2 simply shows the IV characteristics (V_ds sweep), similar to that seen on textbooks.
 
 #+CAPTION: Figure 1.2
 [[images/vds_sweep.svg]]
 
+Similarly, the plot below is the IV characteristics of the PMOS.
+
 ----TODO: PMOS I-V curve----
 
-** Voltage Transfer Characteristics
+** Voltage Transfer Characteristics (VTC)
 
 In essence, the voltage transfer characteristics of the inverter are tested to see how the output voltage V_out is affected for different inputs of V_in.
 
-Before proceeding with VTC analysis, a quick symbol for the inverter (NOT) is created within xschem, and is utilized for the remainder of the project.
+Before proceeding with VTC analysis, a quick symbol for the inverter is created within Xschem, and is utilized for the remainder of the project.
 
 #+CAPTION: Figure 1.3 - Inverter in the form of CMOS
 [[images/CMOS_NOT.png]]
@@ -61,15 +70,16 @@ Signals tend to variate as they oscillate, so the noise margin is studied to mea
 Using the following Ngspice command
 
 #+BEGIN_SRC spice_1
-let gain = abs(deriv(vout)) >= 1
+let gain = abs(deriv(vout)) >= 1 
+gain = gain*1.8
 #+END_SRC
 
-leads to the plot of figure 1.7, where it can be seen that signals between .7[V] and .9[V] lead to inoperable values for the inverter being built. With a small tweak to the previous command, both the VTC and Noise Margin plots can be compared.
+leads to the plot of figure 1.7, where it can be seen that signals between .7[V] and .9[V] lead to inoperable values for the inverter being built. Thus, both the VTC and Noise Margin plots can be compared.
 
 #+CAPTION: Figure 1.7
 [[images/gain.svg]]
 
-This small tweak leads to Figure 1.8, where the intercepts of V_out and the gain (Noise Margin), are measured to define the values of V_IH and V_IL.
+This comparison leads to Figure 1.8, where the intercepts of V_out and the gain (Noise Margin), are measured to define the values of V_IH and V_IL.
 
 #+CAPTION: Figure 1.8
 [[images/gain_vout.svg]]
@@ -94,7 +104,6 @@ Propagation delay is a fundamental topic within VLSI design that is used to dete
 
 #+CAPTION: Figure 1.9
 [[images/trans_vout_vin.svg]]
-
 
 With the following Ngspice commands,
 
@@ -197,25 +206,86 @@ The inverter has been tested for its I-V, VTC, Noise, Delay, and Power character
 - Propagation Delay from Low to High (t_pLH): 35.65[ps]
 - Input Low Voltage (V_IL): .744[V]
 - Input High Voltage (V_IH): .980[V]
-- Power (Assuming zero load capacitance): -3.45[uW]
+- Average Power (Assuming zero load capacitance): -3.45[uW]
 
 * Layout Design & DRC Checks (Magic)
 
+By utilizing the SKY130 pdk and and the layout editor, Magic, the layout of the inverter is created with the constraints (or design rules) described by the pdk (proccess development kit). Thus, it is important to create a design that is valid for manufacturing, and is also valid for spice simulation. Figure 1.13 showcases the layers that are available for use, where different metals can be used for a multitude of devices. Many layers utilize vias, and different metals use a different ammount of space. Since the inverter is not deeply complex, the layers used will range from metal1, to the nwell and diffusion layers.
 
+#+CAPTION: Figure 1.13
+[[images/metal_stack.svg]]
+
+Before initiating the layout, it is important to set the design rules or units that each square in the grid will represent. For this project, the design rules of 50[nm] by 50[nm] will allow for precise painting. Thus, the layout process begins with the PMOS transistor by painting the n-well big enough to contain the p-diffusion, polysilicon, local interconnect (li), local interconnect via, metal connection (mcon), and metal1. The p-diffusion is then painted within the n-well, as well as the polysilicon, which runs at the middle of the p-diffusion. By adding the local interconnects, the vias for the connection of the local interconnects and metal1 can be painted. For the PMOS, the metal1 layer represent the V_dd voltage supply of the inverter. The GIF below shows a quick illustration of the layout design of the PMOS.
+
+// ADD GIF
+
+What follows is designing the input and output portion of the inverter. The polysilicon in the middle is extended, where a local interconnect layer, as well as a --- layer is placed, which connects with the right side of the design. Thus, the input and output are connected through the previously placed vias. The GIF below showcases the creation of the input/output layers.
+
+// ADD GIF
+
+Lastly, the NMOS is painted. Similarly to the PMOS, the polysilicon runs through the n-diffusion layer, where the local interconnects are placed on the sides, which have vias that connect the two. Then, the local interconnect will extend to the bottom, where the metal connections and metal1 one meet. Thus, the NMOS and the ground connection has been finalized. Again, the GIF below illustrates the process.
+
+// ADD GIF
+
+The table below showcases the final dimmensions of some of the layers utilized in the layout design of the inverter.
+
+| Layer | Dimmensions |
+|-------+-----|
+| n-well | 3000[nm] x 3000[nm] |
+| p-diffusion | 1150[nm] x 2000[nm] |
+| n-diffusion | 1150[nm] x 1000[nm] |
+| Polysilicon | 150[nm] x 4400[nm] |
+
+Though DRC checks haven't been mentioned explicitly, it must be noted that the design of the inverter results in zero DRC errors, making it a valid design for manufacturing.
 
 * LVS & Final Verification
 
+For layout versus schematic (LVS), Netgen is used to check the equivalency between the Xschem design, and the Magic design. The width, length, and the names of the nets for the transistors will be compared, among other factors, which will determine the success of LVS.
 
-you'll have to use netgen for LVS checks
+In magic, the following commands are used,
 
-that should be all you need tbh
+#+BEGIN_SRC magic_1
+extract all
+ext2spice final.ext
+#+END_SRC
+
+where the extraction of the data is converted into a .spice file, which is then compared to the Xschem spice file. Thus, the following command,
+
+#+BEGIN_SRC netgen_1
+netgen -batch lvs layout.spice cmos_inv.spice ~/vlsi_/open_pdks/sky130/sky130A/libs.tech/netgen/sky130A_setup.tcl
+#+END_SRC
+
+initiates the LVS check using Netgen. The figure below showcases the results within the "comp.out" file created from the check.
+
+#+CAPTION: Figure --
+[[Netgen_Results.png]]
+
+By utilizing the same netlist from spice, the transistors between the Xschem verision and the Magic version are swapped. The new spice snippet is shown below.
+
+#+CAPTION: Figure --
+[[New_Spice_Sim.png]]
+
+The data below showcases the results that the layout design inverter provides by using the same simulation base used in the Xschem version of the inverter.
+
+- PMOS: Width of 2 microns and length of .15 microns
+- NMOS: Width of 1 micron and length of .15 microns
+- Rise Time (t_r): 61.56[ps]
+- Fall Time (t_f): 48.11[ps]
+- Propagation Delay from High to Low (t_pHL): 28.66[ps]
+- Propagation Delay from Low to High (t_pLH): 41.16[ps]
+- Input Low Voltage (V_IL): .773[V]
+- Input High Voltage (V_IH): .960[V]
+- Average Power (Assuming zero load capacitance): -3.64[uW]
 
 * Conclusion
 
-final inverter specs
+A table is created below, which showcases the specifications from the schematic capture, the layout design, and the differences between the two.
 
-what you learned
+// ADD TABLE
 
-the importance of the project in regards to your career
+There is a maximum of 15% difference between the data captured from Xschem and Magic. Though it may seem high, the differences are likely due to parasitics in the layout design. For the purpose of the project, this is good enough. Thus it is concluded that the layout design of the inverter was successful. Future considerations would be to analyze parasitics and understand how they affect designs.
 
-YOU'RE ALMOST DONE, FINISH IT NOW
+This is an important project to tackle in VLSI design, as it cements fundamental knowledge in MOSFETs, Schematic Capturing, Spice Simulation, Layout Design with DRC/LVS checks, and further verification. Furthermore, documentation is something that is often overlooked, so it reinforces the importance of writing clear and proper technical writing for each project made. Note that though an inverter was created, which is often used in digital designs, this is technically an analog VLSI project.
+
+Future projects to consider would be to create more complex analog designs, or to give digital design a try. It would be a good idea to look into workflows such as OpenLane/OpenRoad, as they streamline the digital design process from a simple RTL design to GDSII within minutes.
+
