@@ -1,8 +1,8 @@
 * Table of Contents
 - [[#objective][Objective]]
-- [[#simulations][Simulation]]
-- [[#layout-design][Layout Design & DRC Checks (Magic)]]
-- [[#lvs-final-verification][LVS & Final Verification]]
+- [[#simulation][Simulation]]
+- [[#layout-design-&-drc-checks-(magic)][Layout Design & DRC Checks (Magic)]]
+- [[#lvs-&-final-verification][LVS & Final Verification]]
 - [[#conclusion][Conclusion]]
 
 * Objective
@@ -96,7 +96,7 @@ leads to the formation of Table 1.2 to provide the following calculations for V_
 #+CAPTION: Table 1.2 - Calculations for V_IL and V_IH
 | V_IL | V_OH |
 |-------+-----|
-| .744[V] | .980[V] |
+| .744[V] | .980[V] | // FIX ME
 
 ** Delay Analysis
 
@@ -213,7 +213,7 @@ The inverter has been tested for its I-V, VTC, Noise, Delay, and Power character
 By utilizing the SKY130 pdk and and the layout editor, Magic, the layout of the inverter is created with the constraints (or design rules) described by the pdk (proccess development kit). Thus, it is important to create a design that is valid for manufacturing, and is also valid for spice simulation. Figure 1.13 showcases the layers that are available for use, where different metals can be used for a multitude of devices. Many layers utilize vias, and different metals use a different ammount of space. Since the inverter is not deeply complex, the layers used will range from metal1, to the nwell and diffusion layers.
 
 #+CAPTION: Figure 1.13
-[[images/metal_stack.svg]]
+[[images/SKY130PDK.png]]
 
 Before initiating the layout, it is important to set the design rules or units that each square in the grid will represent. For this project, the design rules of 50[nm] by 50[nm] will allow for precise painting. Thus, the layout process begins with the PMOS transistor by painting the n-well big enough to contain the p-diffusion, polysilicon, local interconnect (li), local interconnect via, metal connection (mcon), and metal1. The p-diffusion is then painted within the n-well, as well as the polysilicon, which runs at the middle of the p-diffusion. By adding the local interconnects, the vias for the connection of the local interconnects and metal1 can be painted. For the PMOS, the metal1 layer represent the V_dd voltage supply of the inverter. The GIF below shows a quick illustration of the layout design of the PMOS.
 
@@ -281,7 +281,11 @@ The data below showcases the results that the layout design inverter provides by
 
 A table is created below, which showcases the specifications from the schematic capture, the layout design, and the differences between the two.
 
-// ADD TABLE
+| Inverter  | PMOS   | NMOS | t_r   | t_f       | t_pHL | t_LH | V_IL | V_IH | Average Power |
+|------+----|----+---|---+--|---+---|--+--------|--+----|---+--|--+---|--+---|------+--------| 
+| Schematic | 2[um]  | 1[um] | 53.82[um] | 45.28[ps] | 24.88[ps] | 35.65[ps] | 0.744[V] | 0.980[V] | -3.45[uW] |
+| Layout    | 2[um]  | 1[um] | 61.56[ps] | 48.11[ps] | 28.66[ps] | 41.16[ps] | 0.773[V] | 0.960[V] | -3.64[uW] |
+// ADD PERCENT DIFFERENCE OR SUM
 
 There is a maximum of 15% difference between the data captured from Xschem and Magic. Though it may seem high, the differences are likely due to parasitics in the layout design. For the purpose of the project, this is good enough. Thus it is concluded that the layout design of the inverter was successful. Future considerations would be to analyze parasitics and understand how they affect designs.
 
