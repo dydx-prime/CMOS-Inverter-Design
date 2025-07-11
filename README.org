@@ -1,8 +1,18 @@
 * Table of Contents
 - [[#objective][Objective]]
-- [[#simulation][Simulation]]
-- [[#layout-design-&-drc-checks-(magic)][Layout Design & DRC Checks (Magic)]]
-- [[#lvs-&-final-verification][LVS & Final Verification]]
+
+- [[#simulation-ngspice][Simulation (Ngspice)]]
+  -  [[#transistor-simulation][Transistor Simulation]]
+  -  [[#voltage-transfer-characteristics-vtc][Voltage Transfer Charactersistics (VTC)]]
+  -  [[#noise-analysis][Noise Analysis]]
+  -  [[#delay-analysis][Delay Analysis]]
+  -  [[#power-analysis][Power Analysis]]
+  -  [[#a-quick-recap][A Quick Recap]]
+
+- [[#layout-design--drc-checks-magic][Layout Design & DRC Checks (Magic)]]
+
+- [[#lvs--final-verification][LVS & Final Verification]]
+
 - [[#conclusion][Conclusion]]
 
 * Objective
@@ -96,7 +106,7 @@ leads to the formation of Table 1.2 to provide the following calculations for V_
 #+CAPTION: Table 1.2 - Calculations for V_IL and V_IH
 | V_IL | V_OH |
 |-------+-----|
-| .744[V] | .980[V] | // FIX ME
+| .744[V] | .980[V] | 
 
 ** Delay Analysis
 
@@ -215,17 +225,26 @@ By utilizing the SKY130 pdk and and the layout editor, Magic, the layout of the 
 #+CAPTION: Figure 1.13
 [[images/SKY130PDK.png]]
 
-Before initiating the layout, it is important to set the design rules or units that each square in the grid will represent. For this project, the design rules of 50[nm] by 50[nm] will allow for precise painting. Thus, the layout process begins with the PMOS transistor by painting the n-well big enough to contain the p-diffusion, polysilicon, local interconnect (li), local interconnect via, metal connection (mcon), and metal1. The p-diffusion is then painted within the n-well, as well as the polysilicon, which runs at the middle of the p-diffusion. By adding the local interconnects, the vias for the connection of the local interconnects and metal1 can be painted. For the PMOS, the metal1 layer represent the V_dd voltage supply of the inverter. The GIF below shows a quick illustration of the layout design of the PMOS.
+To launch an instantiation of Magic with the SKY130 pdk, the following command is used
 
-// ADD GIF
+#+BEGIN_SRC layout_1
+magic -rcfile /usr/local/share/pdk/sky130A/libs.tech/magic/sky130A.magicrc
+#+END_SRC
 
-What follows is designing the input and output portion of the inverter. The polysilicon in the middle is extended, where a local interconnect layer, as well as a --- layer is placed, which connects with the right side of the design. Thus, the input and output are connected through the previously placed vias. The GIF below showcases the creation of the input/output layers.
+Before painting the layout, it is important to set the design rules or units that each square in the grid will represent. For this project, the design rules of 50[nm] by 50[nm] will allow for precise painting. Thus, the layout process begins with the PMOS transistor by painting the n-well big enough to contain the p-diffusion, polysilicon, local interconnect (li), local interconnect via, metal connection (mcon), and metal1. The p-diffusion is then painted within the n-well, as well as the polysilicon, which runs at the middle of the p-diffusion. By adding the local interconnects, the vias for the connection of the local interconnects and metal1 can be painted. For the PMOS, the metal1 layer represent the V_dd voltage supply of the inverter. The figure below shows a quick illustration of the layout design of the PMOS.
 
-// ADD GIF
+#+CAPTION: Figure --
+[[images/PMOS_layout.png]]
 
-Lastly, the NMOS is painted. Similarly to the PMOS, the polysilicon runs through the n-diffusion layer, where the local interconnects are placed on the sides, which have vias that connect the two. Then, the local interconnect will extend to the bottom, where the metal connections and metal1 one meet. Thus, the NMOS and the ground connection has been finalized. Again, the GIF below illustrates the process.
+What follows is designing the input and output portion of the inverter. The polysilicon in the middle is extended, where a local interconnect layer, as well as a via layer is placed, which connects with the right side of the design. Thus, the input and output are connected through the previously placed vias. The figure below showcases the creation of the input/output layers.
 
-// ADD GIF
+#+CAPTION: Figure --
+[[images/IO_layout.png]]
+
+Lastly, the NMOS is painted. Similarly to the PMOS, the polysilicon runs through the n-diffusion layer, where the local interconnects are placed on the sides, which have vias that connect the two. Then, the local interconnect will extend to the bottom, where the metal connections and metal1 one meet. Thus, the NMOS and the ground connection has been finalized. Again, the diagram below illustrates the process.
+
+#+CAPTION: Figure --
+[[images/NMOS_layout.png]]
 
 The table below showcases the final dimmensions of some of the layers utilized in the layout design of the inverter.
 
@@ -234,7 +253,7 @@ The table below showcases the final dimmensions of some of the layers utilized i
 | n-well | 3000[nm] x 3000[nm] |
 | p-diffusion | 1150[nm] x 2000[nm] |
 | n-diffusion | 1150[nm] x 1000[nm] |
-| Polysilicon | 150[nm] x 4400[nm] |
+| polysilicon | 150[nm] x 4400[nm] |
 
 Though DRC checks haven't been mentioned explicitly, it must be noted that the design of the inverter results in zero DRC errors, making it a valid design for manufacturing.
 
@@ -246,24 +265,24 @@ In magic, the following commands are used,
 
 #+BEGIN_SRC magic_1
 extract all
-ext2spice final.ext
+ext2spice layout.ext
 #+END_SRC
 
 where the extraction of the data is converted into a .spice file, which is then compared to the Xschem spice file. Thus, the following command,
 
 #+BEGIN_SRC netgen_1
-netgen -batch lvs layout.spice cmos_inv.spice ~/vlsi_/open_pdks/sky130/sky130A/libs.tech/netgen/sky130A_setup.tcl
+netgen -batch lvs layout.spice schematic_inv.spice ~/vlsi_/open_pdks/sky130/sky130A/libs.tech/netgen/sky130A_setup.tcl
 #+END_SRC
 
 initiates the LVS check using Netgen. The figure below showcases the results within the "comp.out" file created from the check.
 
 #+CAPTION: Figure --
-[[Netgen_Results.png]]
+[[images/Netgen_Results.png]]
 
 By utilizing the same netlist from spice, the transistors between the Xschem verision and the Magic version are swapped. The new spice snippet is shown below.
 
 #+CAPTION: Figure --
-[[New_Spice_Sim.png]]
+[[images/New_Spice_Sim.png]]
 
 The data below showcases the results that the layout design inverter provides by using the same simulation base used in the Xschem version of the inverter.
 
@@ -283,13 +302,27 @@ A table is created below, which showcases the specifications from the schematic 
 
 | Inverter  | PMOS   | NMOS | t_r   | t_f       | t_pHL | t_LH | V_IL | V_IH | Average Power |
 |------+----|----+---|---+--|---+---|--+--------|--+----|---+--|--+---|--+---|------+--------| 
-| Schematic | 2[um]  | 1[um] | 53.82[um] | 45.28[ps] | 24.88[ps] | 35.65[ps] | 0.744[V] | 0.980[V] | -3.45[uW] |
-| Layout    | 2[um]  | 1[um] | 61.56[ps] | 48.11[ps] | 28.66[ps] | 41.16[ps] | 0.773[V] | 0.960[V] | -3.64[uW] |
-// ADD PERCENT DIFFERENCE OR SUM
+| Xschem | 2[um]  | 1[um] | 53.82[um] | 45.28[ps] | 24.88[ps] | 35.65[ps] | 0.744[V] | 0.980[V] | -3.45[uW] |
+| Magic    | 2[um]  | 1[um] | 61.56[ps] | 48.11[ps] | 28.66[ps] | 41.16[ps] | 0.773[V] | 0.960[V] | -3.64[uW] |
+| Percent Difference | 0% | 0% | 13.42% | 6.06% | 14.12% | 14.35% | 3.82% | 2.06% | 5.36% |
 
-There is a maximum of 15% difference between the data captured from Xschem and Magic. Though it may seem high, the differences are likely due to parasitics in the layout design. For the purpose of the project, this is good enough. Thus it is concluded that the layout design of the inverter was successful. Future considerations would be to analyze parasitics and understand how they affect designs.
+There is a maximum of 15% difference between the data captured from Xschem and Magic. Though it may seem high, the differences are likely due to parasitics in the layout design. For the purpose of the project, this is good enough. Thus, it is concluded that the layout design of the inverter was successful. Future considerations would be to analyze parasitics and understand how they affect designs.
 
-This is an important project to tackle in VLSI design, as it cements fundamental knowledge in MOSFETs, Schematic Capturing, Spice Simulation, Layout Design with DRC/LVS checks, and further verification. Furthermore, documentation is something that is often overlooked, so it reinforces the importance of writing clear and proper technical writing for each project made. Note that though an inverter was created, which is often used in digital designs, this is technically an analog VLSI project.
+This is an important project to tackle in VLSI design, as it cements fundamental knowledge in MOSFETs, CMOS logic, schematic capturing, spice simulation, layout design with DRC/LVS checks, and further verification. Furthermore, documentation is something that is often overlooked, so it reinforces the importance of writing clear and proper technical writing for each project made.
 
-Future projects to consider would be to create more complex analog designs, or to give digital design a try. It would be a good idea to look into workflows such as OpenLane/OpenRoad, as they streamline the digital design process from a simple RTL design to GDSII within minutes.
+Future projects to consider would be to create more complex analog designs, or to give digital design a try. It would be a good idea to look into workflows such as OpenLane/OpenRoad, as they streamline the digital design process from RTL to GDSII.
+
+* Extras
+
+The LVS pass and simulation results prove that the layout design and schematic design are a match. However, the figure below is placed to show the V_out/V_in graph to further prove an inverter was made in the layout design.
+
+#+CAPTION: Figure --
+[[images/layout_inverter_IO_graph.svg]]
+
+A .GDSII file can be extracted from Magic, which can be viewed with Klayout. Despite not analyzing the GDSII file, a copy (inverter.gds in the layout_design directory) is provided for those intrested in looking further into the manufacturing process within ASICS and VLSI design.
+
+
+
+
+
 

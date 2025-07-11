@@ -8,7 +8,7 @@ Equate elements:  no current cell.
 Device classes sky130_fd_pr__pfet_01v8 and sky130_fd_pr__pfet_01v8 are equivalent.
 
 Subcircuit summary:
-Circuit 1: not.spice                       |Circuit 2: final.spice                     
+Circuit 1: layout.spice                    |Circuit 2: schematic_inv.spice             
 -------------------------------------------|-------------------------------------------
 sky130_fd_pr__nfet_01v8 (1)                |sky130_fd_pr__nfet_01v8 (1)                
 sky130_fd_pr__pfet_01v8 (1)                |sky130_fd_pr__pfet_01v8 (1)                
@@ -17,7 +17,7 @@ Number of nets: 4                          |Number of nets: 4
 ---------------------------------------------------------------------------------------
 Netlists match uniquely.
 Cells have no pins;  pin matching not needed.
-Device classes not.spice and final.spice are equivalent.
+Device classes layout.spice and schematic_inv.spice are equivalent.
 
 Final result: Circuits match uniquely.
 .

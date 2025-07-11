@@ -1,6 +1,6 @@
 magic
 tech sky130A
-timestamp 1751892692
+timestamp 1752193593
 << nwell >>
 rect -110 30 185 320
 << nmos >>
@@ -91,4 +91,5 @@ rlabel viali 30 285 55 305 1 Vdd
 rlabel polycont 0 5 20 25 1 Vin
 rlabel locali 65 0 100 30 1 Vout
 rlabel viali 30 -200 55 -180 1 gnd
+rlabel nwell -110 30 185 320 1 Vdd
 << end >>

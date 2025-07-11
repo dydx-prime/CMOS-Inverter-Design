@@ -1,3 +1,0 @@
-source /usr/local/share/pdk/sky130B/libs.tech/xschem/xschemrc
-
-set terminal "kitty -e bash -c"
