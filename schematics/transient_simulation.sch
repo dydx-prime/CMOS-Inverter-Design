@@ -7,14 +7,19 @@ E {}
 N 70 110 210 110 {lab=#net1}
 N 70 110 70 130 {lab=#net1}
 N -30 160 30 160 {lab=#net2}
-N 70 160 150 160 {lab=#net1}
-N 150 110 150 160 {lab=#net1}
+N 210 110 220 110 {lab=#net1}
+N 220 110 220 140 {lab=#net1}
+N 70 190 70 220 {lab=GND}
+N 220 140 220 160 {lab=#net1}
+N 70 160 130 160 {lab=GND}
+N 130 160 130 210 {lab=GND}
+N 70 210 130 210 {lab=GND}
 C {code_shown.sym} -60 -60 0 0 {name=char only_toplevel=false value=".lib /home/prime/vlsi_/open_pdks/sources/sky130_fd_pr/models/sky130.lib.spice tt
 .dc vds 0 -1.8 -1m vgs 0 -2 -.3
 .save all
 .end"}
-C {vsource.sym} 210 140 0 0 {name=vds value=1.8 savecurrent=false}
-C {gnd.sym} 210 170 0 0 {name=l2 lab=GND}
+C {vsource.sym} 220 190 0 0 {name=vds value=1.8 savecurrent=false}
+C {gnd.sym} 220 220 0 0 {name=l2 lab=GND}
 C {vsource.sym} -30 190 0 0 {name=vgs value=1.8 savecurrent=false}
 C {gnd.sym} -30 220 0 0 {name=l3 lab=GND}
 C {sky130_fd_pr/pfet_01v8.sym} 50 160 0 0 {name=M1
@@ -31,5 +36,4 @@ sa=0 sb=0 sd=0
 model=pfet_01v8
 spiceprefix=X
 }
-C {vsource.sym} 70 220 0 0 {name=vd value=1.8 savecurrent=false}
-C {gnd.sym} 70 250 0 0 {name=l1 lab=GND}
+C {gnd.sym} 70 220 0 0 {name=l1 lab=GND}

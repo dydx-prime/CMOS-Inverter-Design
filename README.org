@@ -7,7 +7,8 @@
   -  [[#noise-analysis][Noise Analysis]]
   -  [[#delay-analysis][Delay Analysis]]
   -  [[#power-analysis][Power Analysis]]
-  -  [[#a-quick-recap][A Quick Recap]]
+
+- [[#design-specifications][Design Specifications]]
 
 - [[#layout-design--drc-checks-magic][Layout Design & DRC Checks (Magic)]]
 
@@ -16,31 +17,33 @@
 - [[#conclusion][Conclusion]]
 
 * Objective
-The objective of the project is to analyze (Ngspice) the PMOS/NMOS isolated. A custom inverter is then formed, where the VTC (voltage transfer charcteristics), Noise, Delay, and Power are analyzed. What follows is a layout design (Magic) that complies with the SKY130 PDK rules. The project concludes with LVS checks through Netgen and congruency checks with the simulations that contain the transistors from the schematic capture, and the layout design.
+
+The objective of the project is to analyze (Ngspice) the PMOS/NMOS isolated. A custom inverter is then formed, where the VTC (voltage transfer characteristics), Noise, Delay, and Power are analyzed. What follows is a layout design (Magic) that complies with the SKY130 PDK rules. The project concludes with LVS checks through Netgen and congruency checks with the simulations that contain the transistors from the schematic capture, and the layout design.
 
 * Simulation (Ngspice)
 
 ** Transistor Simulation
 
-The NMOS and PMOS are first analyzed to understand how the current of the transistors behaves based on different inputs of V_ds and V_gs. Utilizing ngspice, the following schematic is simulated for mutiple steps of voltages of V_ds and V_gs. Within Ngspice, the command line is used to display and plot the necessary data calculated. The first DC sweep on V_gs (transfer characterisitcs) for multiple values of V_ds is show in the plot below, where it can be seen that the threshold voltage is between 500mv and 650mv.
+The NMOS and PMOS are first analyzed to understand how the current of the transistors behaves based on different inputs of V_ds (voltage from drain to source) and V_gs (voltage from gate to source). Utilizing Ngspice, the isolated transistor is simulated for mutiple steps of voltages of V_ds and V_gs. Within Ngspice, the command line is used to display and plot the necessary data calculated. The DC sweep on V_gs (transfer characterisitcs) for multiple values of V_ds is show in the plot below, where it can be seen that the threshold voltage is between 500mv and 650mv.
 
 #+CAPTION: Figure 1.1
 [[images/vgs_sweep.svg]]
 
-Figure 1.2 simply shows the IV characteristics (V_ds sweep), similar to that seen on textbooks.
+The figure below simply shows the IV characteristics (V_ds sweep) of the NMOS.
 
 #+CAPTION: Figure 1.2
 [[images/vds_sweep.svg]]
 
-Similarly, the plot below is the IV characteristics of the PMOS.
+Similarly, the plot below shows the IV characteristics of the PMOS.
 
-----TODO: PMOS I-V curve----
+#+CAPTION: Figure
+[[images/PMOS_IV.svg]]
 
 ** Voltage Transfer Characteristics (VTC)
 
-In essence, the voltage transfer characteristics of the inverter are tested to see how the output voltage V_out is affected for different inputs of V_in.
+In essence, the voltage transfer characteristics of the inverter are tested to see how the output voltage, V_out, is affected for different inputs of voltage, V_in.
 
-Before proceeding with VTC analysis, a quick symbol for the inverter is created within Xschem, and is utilized for the remainder of the project.
+Before proceeding with VTC analysis, a symbol for the inverter is created within Xschem, and is utilized for the remainder of the project.
 
 #+CAPTION: Figure 1.3 - Inverter in the form of CMOS
 [[images/CMOS_NOT.png]]
@@ -48,21 +51,21 @@ Before proceeding with VTC analysis, a quick symbol for the inverter is created 
 #+CAPTION: Figure 1.4 - Inverter in the form of a gate
 [[images/GATE_NOT.png]]
 
-With a much improved format for testing the inverter, the VTC simulation is tested for a wide range of inputs between 0 and 2[V]. The plot of Figure 1.5 shows that the output is able to go from a high value, to a low value, the charctersisitcs that shape an inverter. 
+With a much improved format for testing the inverter, the VTC simulation is tested for a wide range of inputs between 0 and 2[V]. The plot below shows that the output is able to go from a high value to a low value, matching the expectations of the inverter. 
 
 #+CAPTION: Figure 1.5
 [[images/vtc_1.svg]]
 
-This proves the design to be correct, though it can be seen that the value where V_in and V_out are equal, is not .9[V]. The following command is used in Ngspice,
+The CMOS design is sufficient to be used as an inverter, but further analysis shows that the point where V_in and V_out are equal is not at the .9[V] mark. Though it is not necessary to match .9[V], this can lead to better noise margins, leading to a more robust design. The following command is used in Ngspice,
 
 #+BEGIN_SRC spice
 meas dc vm when vin=vout
 #+END_SRC
 
-where it can be seen that the V_m (midpoint voltage), is .83[V]. The midpoint voltage can be important in regards to noise margin, as it can dictate the maximum value a voltage can have to be considered a low, and a mininum value a voltage can have to be considered a high. Between these maximum and minimum points, is where the noise becomes prominent, that is, the inverter will not be able to set a clean or correct high/low value. This can be mitigated by widening the PMOS transistor, though increasing the width can lead to increased area in silicon area, as well as increased power consumption. For this project, the width of the PMOS is 2[um], and the NMOS is 1[um]. Table 1.1 Is used merely to show the values of V_m for different width's of the PMOS network.
+where it can be seen that the V_m (midpoint voltage), is .83[V]. The midpoint voltage can be important in regards to noise margin, as it can dictate the maximum value a voltage can have to be considered a low, and a mininum value a voltage can have to be considered a high. Between these maximum and minimum points, is where the noise is prominent, that is, the inverter will not be able to set a clean or correct high/low value. This can be mitigated by widening the PMOS transistor, though increasing the width can lead to increased area in silicon area, as well as increased power consumption. For this project, the width of the PMOS is 2[um], and the NMOS is 1[um]. The table below is used merely to show the values of V_m for different width's of the PMOS network.
 
 #+CAPTION: Table 1.1 - Values of V_m for different PMOS width values
-| WIDTH | V_m |
+| PMOS Width | V_m |
 |-------+-----|
 | 1[um] | .830[V] |
 | 2[um] | .869[V] |
@@ -101,7 +104,7 @@ meas vil dc find vin when gain=1 cross=1
 meas vih dc find vin when gain=1 cross=last
 #+END_SRC
 
-leads to the formation of Table 1.2 to provide the following calculations for V_IL and V_IH
+leads to the formation of the table below to provide the following calculations for V_IL and V_IH
 
 #+CAPTION: Table 1.2 - Calculations for V_IL and V_IH
 | V_IL | V_OH |
@@ -130,7 +133,7 @@ print tpHL
 print tpLH
 #+END_SRC
 
-the results for t_PHL and t_PLH are 24.88[ps] and 35.65[ps], respectively. These values are used to determine the time it takes V_in to affect V_out (for low and high inputs). Analysis for the time it takes for V_out to change during a transition can be reffered to as rise(t_r) and fall time(t_f). To calculate the rise and fall time, the following Ngspice commands are used,
+the results for t_PHL and t_PLH are 24.88[ps] and 35.65[ps], respectively. These values are used to determine the time it takes V_in to affect V_out (for low and high inputs). Analysis for the time it takes for V_out to change during a transition can be reffered to as rise (t_r) and fall time (t_f). To calculate the rise and fall time, the following Ngspice commands are used,
 
 #+BEGIN_SRC spice_4
 meas tran t10 when vout=.18 RISE=1
@@ -145,7 +148,7 @@ print tr
 print tf
 #+END_SRC
 
-where tr and tf are 53.82[ps] and 45.28[ps], respectivelly. Up until this point, the inverter has been isolated(independent of context), which is never seen in typical design. It's relevance is in the fact that some ways to reduce the rise and fall times of a design, is to:
+where t_r and t_f are 53.82[ps] and 45.28[ps], respectivelly. Up until this point, the inverter has been isolated (independent of context), which is never seen in typical design. It's relevance is in the fact that some ways to reduce the rise and fall times of a design, is to:
 
 - Increase the power (V_dd)
 
@@ -153,12 +156,12 @@ where tr and tf are 53.82[ps] and 45.28[ps], respectivelly. Up until this point,
 
 - Decrease the load capacitance
 
-With the inverter being isolated, the third method for reducing rise and fall times cannot be done. Thus, a capacitor can be added to the output of the inverter as shown in figure 1.10, to simulate load capacitance. Before testing the methods provided, it is important to know that there are tradeoffs to reducing delay(or creating fast speed designs), such as the increase of power consumption, the increase of silicon area, and possible lower noise margins.
+With the inverter being isolated, the third method for reducing rise and fall times cannot be done. Thus, a capacitor can be added to the output of the inverter as shown in the figure below, to simulate load capacitance. Before testing the methods provided, it is important to know that there are tradeoffs to reducing delay (or creating fast speed designs), such as the increase of power consumption, the increase of silicon area, and possible lower noise margins.
 
 #+CAPTION: Figure 1.10
 [[images/inv_cap.png]]
 
-Table 1.3 is formed to showcase the different values of rise and fall times based on changes in V_dd, V_in, PMOS/NMOS widths, and load capacitance. The purpose of this section is to prove that the increase to the power supply of the inverter, the decrease to the capacitance load, and the increase of the size of the transistors, will lead to faster speeds.
+The table below is formed to showcase the different values of rise and fall times based on changes in V_dd, V_in, PMOS/NMOS widths, and load capacitance. The purpose of this section is to prove that the increase to the power supply of the inverter, the decrease to the capacitance load, and the increase of the size of the transistors, will lead to faster speeds.
 
 #+CAPTION: Table 1.3 - Summary of Tests
 | V_DD/V_IN | C_LOAD | PMOS | NMOS | t_r | t_f |
@@ -177,7 +180,7 @@ Recall the formula for average power,
 
 where the product of voltage and current are integrated from zero to the period of the signal. Then, the average power is found by dividing the previous result by the period of the signal. Because this formula is a function of time, this will be a pure transient simulation. 
 
-Referring to figure 1.11, it can be seen that for a period of 3.3[ns], the current flowing in the inverter is varying across the axis. Plotting the current and V_out together (figure 1.12), it can be seen that the interval from 3.3[ns] to 6.6[ns] is the best interval to use for power calculations.
+Referring to the first figure below, it can be seen that for a period of 3.3[ns], the current flowing in the inverter is varying across the axis. Plotting the current and V_out together (the second figure below), it can be seen that the interval from 3.3[ns] to 6.6[ns] is the best interval to use for power calculations.
 
 #+CAPTION: Figure 1.11
 [[images/current_plot.svg]]
@@ -185,12 +188,12 @@ Referring to figure 1.11, it can be seen that for a period of 3.3[ns], the curre
 #+CAPTION: Figure 1.12
 [[images/current_vout_plot.svg]]
 
-It is important to mention that there is little to no current being drawn in the inverter because of the capacitance load of zero. Current rises when the capacitance is charging, and since there is little influence of the capacitance, there is little current being used. This is a key concept to understand for low power design, but there are tradeoffs to having low power consumption, such as a reduction in performance.
+There is little to no current being drawn in the inverter because of the capacitance load of zero. Current rises when the capacitance is charging, and since there is little influence of the capacitance, there is little current being used. This is a key concept to understand for low power design, but there are tradeoffs to having low power consumption, such as a reduction in performance.
 
 Some ways to reduce power:
 
 - Reduce the capacitance load
-- Reduce Transistor Size
+- Reduce transistor size
 - In layout design: Reduce wire size since there will be an increase in resistance, which means less current, thus reducing capacitance
 
 By utilizing the following ngspice commands:
@@ -204,9 +207,9 @@ print avg_power
 
 the average power, P_avg, is equal to -3.45[uW]. The negative sign suggests that the dirrection or sign convention is opposite, which can be disregarded in this case. The key point is that there is little power being drawn in the inverter, which is due to its low load capacitance.
 
-** A Quick Recap
+* Design Specifications
 
-The inverter has been tested for its I-V, VTC, Noise, Delay, and Power characteristics, where the final design specficiations for a V_DD and V_IN of 1.8[V].
+The inverter has been tested for its I-V, VTC, Noise, Delay, and Power characteristics, where the final design specficiations for a V_dd and V_in of 1.8[V].
 
 - PMOS: Width of 2 microns and length of .15 microns
 - NMOS: Width of 1 micron and length of .15 microns
@@ -220,7 +223,7 @@ The inverter has been tested for its I-V, VTC, Noise, Delay, and Power character
 
 * Layout Design & DRC Checks (Magic)
 
-By utilizing the SKY130 pdk and and the layout editor, Magic, the layout of the inverter is created with the constraints (or design rules) described by the pdk (proccess development kit). Thus, it is important to create a design that is valid for manufacturing, and is also valid for spice simulation. Figure 1.13 showcases the layers that are available for use, where different metals can be used for a multitude of devices. Many layers utilize vias, and different metals use a different ammount of space. Since the inverter is not deeply complex, the layers used will range from metal1, to the nwell and diffusion layers.
+By utilizing the SKY130 pdk and and the layout editor, Magic, the layout of the inverter is created with the constraints (or design rules) described by the pdk (proccess development kit). Thus, it is important to create a design that is valid for manufacturing, and is also valid for spice simulation. The figure below showcases the layers that are available for use, where different metals can be used for a multitude of devices. Many layers utilize vias, and different metals use a different ammount of space. Since the inverter is not deeply complex, the layers used will range from metal1, to the nwell and diffusion layers.
 
 #+CAPTION: Figure 1.13
 [[images/SKY130PDK.png]]
@@ -231,7 +234,7 @@ To launch an instantiation of Magic with the SKY130 pdk, the following command i
 magic -rcfile /usr/local/share/pdk/sky130A/libs.tech/magic/sky130A.magicrc
 #+END_SRC
 
-Before painting the layout, it is important to set the design rules or units that each square in the grid will represent. For this project, the design rules of 50[nm] by 50[nm] will allow for precise painting. Thus, the layout process begins with the PMOS transistor by painting the n-well big enough to contain the p-diffusion, polysilicon, local interconnect (li), local interconnect via, metal connection (mcon), and metal1. The p-diffusion is then painted within the n-well, as well as the polysilicon, which runs at the middle of the p-diffusion. By adding the local interconnects, the vias for the connection of the local interconnects and metal1 can be painted. For the PMOS, the metal1 layer represent the V_dd voltage supply of the inverter. The figure below shows a quick illustration of the layout design of the PMOS.
+Before painting the layout, it is important to set the design rules or units that each square in the grid will represent. For this project, the design rules of 50[nm] by 50[nm] will allow for precise painting. Thus, the layout process begins with the PMOS transistor by painting the n-well big enough to contain the p-diffusion, polysilicon, local interconnect (li), local interconnect via, metal connection (mcon), and metal1. The p-diffusion is then painted within the n-well, as well as the polysilicon, which runs at the middle of the p-diffusion. By adding the local interconnects, the vias for the connection of the local interconnects and metal1 can be painted. For the PMOS, the metal1 layer represents the V_dd voltage supply of the inverter. The figure below shows a quick illustration of the layout design of the PMOS.
 
 #+CAPTION: Figure --
 [[images/PMOS_layout.png]]
@@ -241,7 +244,7 @@ What follows is designing the input and output portion of the inverter. The poly
 #+CAPTION: Figure --
 [[images/IO_layout.png]]
 
-Lastly, the NMOS is painted. Similarly to the PMOS, the polysilicon runs through the n-diffusion layer, where the local interconnects are placed on the sides, which have vias that connect the two. Then, the local interconnect will extend to the bottom, where the metal connections and metal1 one meet. Thus, the NMOS and the ground connection has been finalized. Again, the diagram below illustrates the process.
+Lastly, the NMOS is painted. Similarly to the PMOS, the polysilicon runs through the n-diffusion layer, where the local interconnects are placed on the sides, which have vias that connect the two. Then, the local interconnect will extend to the bottom, where the metal connections and metal1 one meet. Thus, the NMOS and the ground connection has been finalized. The diagram below illustrates the process.
 
 #+CAPTION: Figure --
 [[images/NMOS_layout.png]]
@@ -256,6 +259,11 @@ The table below showcases the final dimmensions of some of the layers utilized i
 | polysilicon | 150[nm] x 4400[nm] |
 
 Though DRC checks haven't been mentioned explicitly, it must be noted that the design of the inverter results in zero DRC errors, making it a valid design for manufacturing.
+
+The figure below showcases the final layout design.
+
+#+CAPTION: Figure --
+[[images/inverter_layou_design_full.png]]
 
 * LVS & Final Verification
 
@@ -308,21 +316,17 @@ A table is created below, which showcases the specifications from the schematic 
 
 There is a maximum of 15% difference between the data captured from Xschem and Magic. Though it may seem high, the differences are likely due to parasitics in the layout design. For the purpose of the project, this is good enough. Thus, it is concluded that the layout design of the inverter was successful. Future considerations would be to analyze parasitics and understand how they affect designs.
 
-This is an important project to tackle in VLSI design, as it cements fundamental knowledge in MOSFETs, CMOS logic, schematic capturing, spice simulation, layout design with DRC/LVS checks, and further verification. Furthermore, documentation is something that is often overlooked, so it reinforces the importance of writing clear and proper technical writing for each project made.
+This is an important project to tackle in VLSI design, as it cements fundamental knowledge in MOSFETs, CMOS logic, schematic capturing, spice simulation, layout design with DRC/LVS checks, and further verification.
 
-Future projects to consider would be to create more complex analog designs, or to give digital design a try. It would be a good idea to look into workflows such as OpenLane/OpenRoad, as they streamline the digital design process from RTL to GDSII.
+Future projects to consider would be to create more complex analog designs, or to look into workflows such as OpenLane/OpenRoad, as they streamline the digital design process from RTL to GDSII.
 
 * Extras
 
-The LVS pass and simulation results prove that the layout design and schematic design are a match. However, the figure below is placed to show the V_out/V_in graph to further prove an inverter was made in the layout design.
+The LVS pass and simulation results prove that the layout design and schematic design are a match. However, the figure below is placed to show the V_out vs V_in graph to further verify an inverter was made in the layout design.
 
 #+CAPTION: Figure --
 [[images/layout_inverter_IO_graph.svg]]
 
 A .GDSII file can be extracted from Magic, which can be viewed with Klayout. Despite not analyzing the GDSII file, a copy (inverter.gds in the layout_design directory) is provided for those intrested in looking further into the manufacturing process within ASICS and VLSI design.
-
-
-
-
 
 
