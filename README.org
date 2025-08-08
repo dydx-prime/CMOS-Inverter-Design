@@ -176,7 +176,8 @@ The table below is formed to showcase the different values of rise and fall time
 
 Recall the formula for average power,
 
-[[https://quicklatex.com/cache3/f3/ql_ea65fd5b6fb7ab4e8abfedf5f80c65f3_l3.png]]
+#+CAPTION: Figure ---
+[[images/avg_power_formula.png]]
 
 where the product of voltage and current are integrated from zero to the period of the signal. Then, the average power is found by dividing the previous result by the period of the signal. Because this formula is a function of time, this will be a pure transient simulation. 
 
@@ -263,7 +264,7 @@ Though DRC checks haven't been mentioned explicitly, it must be noted that the d
 The figure below showcases the final layout design.
 
 #+CAPTION: Figure --
-[[images/inverter_layou_design_full.png]]
+[[images/inverter_layout_design_full.png]]
 
 * LVS & Final Verification
 
